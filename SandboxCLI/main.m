@@ -11,19 +11,43 @@
 int main(int argc, const char * argv[]) {
   @autoreleasepool {
       
-    // http://stackoverflow.com/questions/2580253/how-do-i-get-the-server-hostname-from-a-mounted-directory-with-cocoa-obj-c
-    FILE *fp = popen("df", "r"); // see man page for df
-    if (fp) {
-      char line[4096];
-      while (line == fgets(line, 4096, fp)) {
-        if (strstr(line, "/Volumes/Phototheque")) { // You need the mount point
-          char host[256];
-          sscanf(line, "%s", host);
-          // printf("Connected: %s\n", host);
-          NSLog(@"Connected: %s\n", host);
+    // http://stackoverflow.com/questions/1331912/ip-address-cocoa
+    NSUInteger  an_Integer;
+    NSArray * ipItemsArray;
+    NSString *externalIP;
+    
+    NSURL *iPURL = [NSURL URLWithString:@"http://www.dyndns.org/cgi-bin/check_ip.cgi"];
+    
+    if (iPURL) {
+      NSError *error = nil;
+      NSString *theIpHtml = [NSString stringWithContentsOfURL:iPURL encoding:NSUTF8StringEncoding error:&error];
+      if (!error) {
+        NSScanner *theScanner;
+        NSString *text = nil;
+        
+        theScanner = [NSScanner scannerWithString:theIpHtml];
+        
+        while ([theScanner isAtEnd] == NO) {
+          
+          // find start of tag
+          [theScanner scanUpToString:@"<" intoString:NULL] ;
+          
+          // find end of tag
+          [theScanner scanUpToString:@">" intoString:&text] ;
+          
+          // replace the found tag with a space
+          //(you can filter multi-spaces out later if you wish)
+          theIpHtml = [theIpHtml stringByReplacingOccurrencesOfString:
+                       [ NSString stringWithFormat:@"%@>", text]
+                                                           withString:@" "] ;
+          ipItemsArray =[theIpHtml  componentsSeparatedByString:@" "];
+          an_Integer=[ipItemsArray indexOfObject:@"Address:"];
+          externalIP =[ipItemsArray objectAtIndex:  ++an_Integer];
         }
+        NSLog(@"%@",externalIP);
+      } else {
+        NSLog(@"Oops... g %ld, %@", (long)[error code], [error localizedDescription]);
       }
-      pclose(fp);
     }
 
       

@@ -1,0 +1,7 @@
+//
+// Prefix header for all source files of the 'SandboxCLI' target in the 'SandboxCLI' project
+//
+
+#ifdef __OBJC__
+  #import <Foundation/Foundation.h>
+#endif
